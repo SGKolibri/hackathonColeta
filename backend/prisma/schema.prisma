@@ -1,0 +1,103 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CIDADAO
+  GESTOR
+}
+
+model User {
+  id       String    @id @default(cuid())
+  email    String    @unique
+  name     String
+  password String
+  salt     String
+  address  String
+  role     Role      @default(CIDADAO)
+}
+
+model Admin {
+  id       String    @id @default(cuid())
+  email    String    @unique
+  name     String
+  password String
+  salt     String
+  role     Role      @default(GESTOR)
+}
+
+model PontoColeta {
+  id          String    @id @default(cuid())
+  name        String
+  address     String
+  description String
+  image       String?
+  latitude    Float
+  longitude   Float
+  coletas     Coleta[]
+  horarios    HorariosPonto[]
+}
+
+//  Horários de funcionamento do ponto de coleta
+model HorariosPonto {
+  id        String    @id @default(cuid())
+  inicio    DateTime
+  fim       DateTime
+  ponto     PontoColeta @relation(fields: [pontoId], references: [id])
+  pontoId   String
+}
+
+// Rota possui vários horários e vários endereços de coleta
+model Rotas {
+  id        String    @id @default(cuid())
+  dia       String
+  horarios  Horarios[]
+  addresses  Addresses[]
+}
+
+model Horarios {
+  id        String    @id @default(cuid())
+  inicio    DateTime
+  fim       DateTime
+  rota      Rotas     @relation(fields: [rotasId], references: [id])
+  rotasId   String
+}
+
+model Addresses {
+  id        String    @id @default(cuid())
+  name      String
+  rota      Rotas    @relation(fields: [rotasId], references: [id])
+  rotasId    String
+}
+
+model Coleta {
+  id          String    @id @default(cuid())
+  tipo        TiposColeta
+  ponto       PontoColeta @relation(fields: [pontoId], references: [id])
+  pontoId     String
+}
+// TODO: Coleta agendada
+
+enum TiposColeta {
+  PAPEL_PAPELAO
+  PLASTICO_ISOPOR
+  VIDRO
+  METAL
+  MADEIRA
+  PERIGOSO_CONTAMINADO
+  DESCARTE_SAUDE
+  RADIOATIVO
+  ORGANICO
+  NAO_RECICLAVEL
+}
