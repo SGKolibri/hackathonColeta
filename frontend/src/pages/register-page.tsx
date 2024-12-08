@@ -10,11 +10,38 @@ import {
 import Logo from "../assets/logo.png";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import useApi from "../hooks/useApi";
 
 export default function RegisterPage() {
+  const { post } = useApi();
+
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [email, setEmail] = useState("");
+
+  const handleRegister = async () => {
+    if (password !== passwordConfirm) {
+      console.log("Senhas não conferem");
+      return;
+    }
+
+    if (!name || !email || !password || !passwordConfirm) {
+      console.log("Preencha todos os campos");
+      return;
+    }
+
+    try {
+      const response = await post("/api/admins/register", {
+        name,
+        email,
+        password,
+      });
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <>
@@ -62,6 +89,8 @@ export default function RegisterPage() {
                 <TextField
                   type="password"
                   variant="outlined"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   sx={{
                     "& .MuiOutlinedInput-notchedOutline": {
                       borderColor: "#066C4A",
@@ -76,6 +105,8 @@ export default function RegisterPage() {
                 <TextField
                   type="password"
                   variant="outlined"
+                  value={passwordConfirm}
+                  onChange={(e) => setPasswordConfirm(e.target.value)}
                   sx={{
                     "& .MuiOutlinedInput-notchedOutline": {
                       borderColor: "#066C4A",
@@ -90,6 +121,7 @@ export default function RegisterPage() {
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 className="px-10 py-4 bg-[#3BA824] text-2xl font-bold text-white rounded-lg shadow-sm"
+                onClick={handleRegister}
               >
                 CADASTRAR
               </motion.button>
